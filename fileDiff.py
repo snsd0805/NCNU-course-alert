@@ -4,6 +4,7 @@ import requests
 import time
 import subprocess
 import csv
+from fcu import fcu_get
 
 from requests.models import Response
 from bot import CourseAlertBot
@@ -92,12 +93,12 @@ def curlDepartmentCourseTable(year, format):
 if __name__ == "__main__":
 
     bot = CourseAlertBot()
-    bot.prevAns = curlDepartmentCourseTable("1101", 'html')
+    bot.prevAns = fcu_get()
     bot.start_polling()
 
     while True:
         try:
-            newAns = curlDepartmentCourseTable("1101", 'html')
+            newAns = fcu_get()
         except:
             continue
         
@@ -115,8 +116,8 @@ if __name__ == "__main__":
 
                 # 發現人數有變化
                 if bot.prevAns[courseID]['chosen'] != curCourse['chosen']:
-                    gap = int(curCourse['chosen'])-int(bot.prevAns[courseID]['chosen'])
-                    print("diff!", curCourse['number'], curCourse['class'], curCourse['name'], curCourse['chosen'], gap)
+                    gap = int(curCourse['chosen']) - int(bot.prevAns[courseID]['chosen'])
+                    print("diff!", curCourse['number'], curCourse['name'], curCourse['chosen'], gap)
                     bot.prevAns[courseID]['chosen'] = curCourse['chosen']
                     bot.prevAns[courseID]['remain'] = curCourse['remain']   # 因為人數有變化，因此 remain 必須變更
                     
@@ -127,10 +128,11 @@ if __name__ == "__main__":
                             print("send to {}".format(chatID))
                             bot.send(
                                 chatID,
-                                "{}{} {}班 釋出{}個名額".format(curCourse['number'], curCourse['name'], curCourse['class'], -gap)
+                                "{}{} 釋出{}個名額".format(curCourse['number'], curCourse['name'], -gap)
                             )
 
-        time.sleep(25)
+        time.sleep(20)
+
 
 
 
